@@ -20,3 +20,6 @@ docs/venv
 
 # development
 .vscode
+
+# DS Store
+**/.DS_Store

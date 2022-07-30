@@ -3,11 +3,12 @@ import os
 import sys
 import time
 import re
+import random
 
 import numpy as np
 import torch
 from torch.optim import Adam
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from torchvision import datasets
 from torchvision import transforms
 import torch.onnx
@@ -40,8 +41,10 @@ def train(args):
         transforms.ToTensor(),
         transforms.Lambda(lambda x: x.mul(255))
     ])
+    # Changed DataLoader to utilize the randomly selected subset of training samples
     train_dataset = datasets.ImageFolder(args.dataset, transform)
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size)
+    train_subset = Subset(train_dataset, random.sample(range(0, len(train_dataset)), args.subset_size))
+    train_loader = DataLoader(train_subset, batch_size=args.batch_size)
 
     transformer = TransformerNet().to(device)
     optimizer = Adam(transformer.parameters(), args.lr)
@@ -185,6 +188,9 @@ def main():
     train_arg_parser = subparsers.add_parser("train", help="parser for training arguments")
     train_arg_parser.add_argument("--epochs", type=int, default=2,
                                   help="number of training epochs, default is 2")
+    # Added command line argument for choosing the subset size of training data
+    train_arg_parser.add_argument("--subset-size", type=int, default=25,
+                                  help="Data subset size for training, default is 25")
     train_arg_parser.add_argument("--batch-size", type=int, default=4,
                                   help="batch size for training, default is 4")
     train_arg_parser.add_argument("--dataset", type=str, required=True,
