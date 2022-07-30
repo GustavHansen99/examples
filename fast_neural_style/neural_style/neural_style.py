@@ -38,6 +38,8 @@ def train(args):
     transform = transforms.Compose([
         transforms.Resize(args.image_size),
         transforms.CenterCrop(args.image_size),
+        # Random rotation as part of the transform process
+        transforms.RandomRotation(degrees=args.rotation_degrees, fill=args.rotation_fill),
         transforms.ToTensor(),
         transforms.Lambda(lambda x: x.mul(255))
     ])
@@ -186,7 +188,7 @@ def main():
     subparsers = main_arg_parser.add_subparsers(title="subcommands", dest="subcommand")
 
     train_arg_parser = subparsers.add_parser("train", help="parser for training arguments")
-    train_arg_parser.add_argument("--epochs", type=int, default=2,
+    train_arg_parser.add_argument("--epochs", type=int, default=10,
                                   help="number of training epochs, default is 2")
     # Added command line argument for choosing the subset size of training data
     train_arg_parser.add_argument("--subset-size", type=int, default=25,
@@ -196,6 +198,12 @@ def main():
     train_arg_parser.add_argument("--dataset", type=str, required=True,
                                   help="path to training dataset, the path should point to a folder "
                                        "containing another folder with all the training images")
+    # Added command line arguments for random rotation data augmentation
+    train_arg_parser.add_argument("--rotation-degrees", type=int, default=45,
+                                  help="Rotation degrees (- specified value to + specified value), default is 45")
+    train_arg_parser.add_argument("--rotation-fill", type=int, default=0,
+                                  help="Pixel fill value, default is 0")
+
     train_arg_parser.add_argument("--style-image", type=str, default="images/style-images/mosaic.jpg",
                                   help="path to style-image")
     train_arg_parser.add_argument("--save-model-dir", type=str, required=True,
